@@ -1,0 +1,11 @@
+<.form :let={f} for={@changeset} action={@action}>
+  <.input field={f[:title]} type="text" label="Title" />
+  <.input field={f[:description]} type="text" label="Description" />
+  <.input field={f[:location]} type="text" label="Location" />
+  <.input field={f[:date]} type="datetime-local" label="Date" />
+  <.input field={f[:icon]} type="text" label="Icon" />
+  <footer>
+    <.button variant="primary">Save Event</.button>
+    <.button :if={@return_to} href={@return_to}>Cancel</.button>
+  </footer>
+</.form>

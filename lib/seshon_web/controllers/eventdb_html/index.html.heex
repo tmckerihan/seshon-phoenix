@@ -1,0 +1,28 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <.header>
+    Listing Events
+    <:actions>
+      <.button href={~p"/events/new"}>
+        <.icon name="hero-plus" /> New Event
+      </.button>
+    </:actions>
+  </.header>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+    <%= for event <- @events do %>
+    <% end %>
+  </div>
+
+  <%= if Enum.empty?(@events) do %>
+    <div class="text-center py-12">
+      <div class="max-w-md mx-auto">
+        <.icon name="hero-calendar-days" class="w-16 h-16 text-base-content/30 mx-auto mb-4" />
+        <h3 class="text-lg font-semibold text-base-content/70 mb-2">No events yet</h3>
+        <p class="text-base-content/50 mb-6">Create your first event to get started!</p>
+        <.link navigate={~p"/events/new"} class="btn btn-primary">
+          <.icon name="hero-plus" class="w-4 h-4" /> Create Event
+        </.link>
+      </div>
+    </div>
+  <% end %>
+</Layouts.app>
