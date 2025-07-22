@@ -139,37 +139,65 @@ defmodule SeshonWeb.Friendships do
     end
   end
 
+  def handle_event("accept_friendship", %{"friendship_id" => friendship_id}, socket) do
+    case Friendships.accept_friendship(socket.assigns.current_scope, friendship_id) do
+      {:ok, _} ->
+        {:noreply, socket |> put_flash(:info, "Friendship accepted")}
+    end
+  end
+
   # Handle PubSub messages for friendship updates
   def handle_info({:created, friendship}, socket) do
     # Update the specific user's friendship status in results
-    updated_results = update_friendship_status(socket.assigns.results, friendship)
+    updated_results =
+      update_friendship_status(
+        socket.assigns.results,
+        friendship,
+        socket.assigns.current_scope.user.id
+      )
 
     {:noreply, assign(socket, :results, updated_results)}
   end
 
   def handle_info({:updated, friendship}, socket) do
     # Update the specific user's friendship status in results
-    updated_results = update_friendship_status(socket.assigns.results, friendship)
+    updated_results =
+      update_friendship_status(
+        socket.assigns.results,
+        friendship,
+        socket.assigns.current_scope.user.id
+      )
 
     {:noreply, assign(socket, :results, updated_results)}
   end
 
   def handle_info({:deleted, friendship}, socket) do
     # Update the specific user's friendship status in results
-    updated_results = update_friendship_status(socket.assigns.results, friendship)
+    updated_results =
+      update_friendship_status(
+        socket.assigns.results,
+        friendship,
+        socket.assigns.current_scope.user.id
+      )
 
     {:noreply, assign(socket, :results, updated_results)}
   end
 
   # Helper to update friendship status for a specific user
-  defp update_friendship_status(results, friendship) do
+  defp update_friendship_status(results, friendship, current_user_id) do
     Enum.map(results, fn result ->
       user_id = result.user.id
 
       cond do
         # If this friendship involves the current user and the result user
         friendship.user_1 == user_id or friendship.user_2 == user_id ->
-          %{result | accepted: friendship.accepted}
+          %{
+            result
+            | accepted: friendship.accepted,
+              friendship_id: friendship.id,
+              is_sender: friendship.user_1 == current_user_id,
+              is_receiver: friendship.user_2 == current_user_id
+          }
 
         # Otherwise, keep the result unchanged
         true ->

@@ -112,7 +112,9 @@ defmodule Seshon.Friendships do
              friendship
              |> Friendship.changeset(attrs)
              |> Repo.update() do
-        broadcast(scope, {:updated, friendship})
+        # Broadcast to both users involved in the friendship
+        broadcast_to_user(friendship.user_1, {:updated, friendship})
+        broadcast_to_user(friendship.user_2, {:updated, friendship})
         {:ok, friendship}
       end
     else
@@ -136,7 +138,9 @@ defmodule Seshon.Friendships do
     if friendship.user_1 == scope.user.id or friendship.user_2 == scope.user.id do
       with {:ok, friendship = %Friendship{}} <-
              Repo.delete(friendship) do
-        broadcast(scope, {:deleted, friendship})
+        # Broadcast to both users involved in the friendship
+        broadcast_to_user(friendship.user_1, {:deleted, friendship})
+        broadcast_to_user(friendship.user_2, {:deleted, friendship})
         {:ok, friendship}
       end
     else
@@ -213,9 +217,25 @@ defmodule Seshon.Friendships do
                %Friendship{}
                |> Friendship.changeset(%{user_1: scope.user.id, user_2: user_id, accepted: false})
                |> Repo.insert() do
-          broadcast(scope, {:created, friendship})
+          # Broadcast to both users involved in the friendship
+          broadcast_to_user(friendship.user_1, {:created, friendship})
+          broadcast_to_user(friendship.user_2, {:created, friendship})
           {:ok, friendship}
         end
     end
+  end
+
+  def accept_friendship(%Scope{} = scope, friendship_id) do
+    friendship = get_friendship!(scope, friendship_id)
+
+    with {:ok, friendship = %Friendship{}} <-
+           update_friendship(scope, friendship, %{accepted: true}) do
+      {:ok, friendship}
+    end
+  end
+
+  # Helper to broadcast to a specific user
+  defp broadcast_to_user(user_id, message) do
+    Phoenix.PubSub.broadcast(Seshon.PubSub, "user:#{user_id}:friendships", message)
   end
 end
