@@ -13,7 +13,8 @@ defmodule SeshonWeb.EventController do
     changeset =
       Events.change_event(conn.assigns.current_scope, %Event{})
 
-    render(conn, :new, changeset: changeset)
+    data = Events.list_associated_events(conn.assigns.current_scope, 10)
+    render(conn, :new, changeset: changeset, data: data)
   end
 
   def create(conn, %{"event" => event_params}) do
@@ -25,7 +26,8 @@ defmodule SeshonWeb.EventController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         IO.inspect(changeset, label: "CHANGESET ERRORS")
-        render(conn, :new, changeset: changeset)
+        data = Events.list_associated_events(conn.assigns.current_scope, 10)
+        render(conn, :new, changeset: changeset, data: data)
     end
   end
 
