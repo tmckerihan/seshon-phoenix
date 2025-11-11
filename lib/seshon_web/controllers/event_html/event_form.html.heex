@@ -3,6 +3,7 @@
   <.input field={f[:description]} type="text" label="Description" />
   <.input field={f[:location]} type="text" label="Location" />
   <.input field={f[:date]} type="datetime-local" label="Date" />
+  <.input field={f[:icon]} type="hidden" id="icon-input" />
   <button
     type="button"
     id="icon-trigger"
@@ -10,7 +11,7 @@
     phx-click-away={JS.hide(to: "#emoji-picker")}
     class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-12 h-12 flex items-center justify-center cursor-pointer"
   >
-    <span class="text-2xl">+</span>
+    <span id="icon-trigger-text" class="text-2xl">+</span>
   </button>
 
   <emoji-picker id="emoji-picker" class="hidden"></emoji-picker>
@@ -43,3 +44,28 @@
     </div>
   </div>
 <% end %>
+<script>
+  const emojiPicker = document.getElementById('emoji-picker');
+  const iconInput = document.getElementById('icon-input');
+  const iconTriggerText = document.getElementById('icon-trigger-text');
+
+  if (iconInput && iconTriggerText && iconInput.value) {
+    iconTriggerText.textContent = iconInput.value;
+  }
+
+  emojiPicker?.addEventListener('emoji-click', event => {
+    const emoji = event.detail.unicode;
+
+    if (iconTriggerText) {
+      iconTriggerText.textContent = emoji;
+    }
+
+    if (iconInput) {
+      iconInput.value = emoji;
+    }
+
+    if (emojiPicker) {
+      emojiPicker.style.display = 'none';
+    }
+  });
+</script>

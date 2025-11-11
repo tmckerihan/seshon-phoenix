@@ -66,6 +66,12 @@ defmodule SeshonWeb.Router do
   scope "/", SeshonWeb do
     pipe_through [:browser]
 
+    live_session :public_pages,
+      on_mount: [{SeshonWeb.UserAuth, :mount_current_scope}],
+      layout: {SeshonWeb.Layouts, :app} do
+      live "/hello", HelloLive, :show
+    end
+
     live_session :current_user,
       on_mount: [{SeshonWeb.UserAuth, :mount_current_scope}] do
       live "/users/register", UserLive.Registration, :new

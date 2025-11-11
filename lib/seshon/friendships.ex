@@ -234,6 +234,17 @@ defmodule Seshon.Friendships do
     end
   end
 
+  def remove_friendship(%Scope{} = scope, friendship_id) do
+    friendship = get_friendship!(scope, friendship_id)
+
+    with {:ok, friendship = %Friendship{}} <-
+           delete_friendship(scope, friendship) do
+      broadcast_to_user(friendship.user_1, {:deleted, friendship})
+      broadcast_to_user(friendship.user_2, {:deleted, friendship})
+      {:ok, friendship}
+    end
+  end
+
   # Helper to broadcast to a specific user
   defp broadcast_to_user(user_id, message) do
     Phoenix.PubSub.broadcast(Seshon.PubSub, "user:#{user_id}:friendships", message)

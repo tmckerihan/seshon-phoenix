@@ -11,7 +11,17 @@ defmodule SeshonWeb.Layouts do
 
   embed_templates "layouts/*"
 
+  attr :flash, :map, default: %{}
+  attr :current_scope, :any, default: nil
+  attr :inner_content, :any, default: nil
+  slot :inner_block
+
   def app(assigns) do
+    assigns =
+      assign_new(assigns, :render_friend_widget?, fn ->
+        Map.has_key?(assigns, :socket) && not is_nil(assigns[:current_scope])
+      end)
+
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
@@ -20,29 +30,48 @@ defmodule SeshonWeb.Layouts do
           <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
         </a>
       </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
+      <div class="flex-none flex items-center gap-4 text-sm">
+        <nav class="flex items-center gap-4 font-medium">
+          <.link href={~p"/"} class="hover:opacity-80">Home</.link>
+          <.link href={~p"/hello"} class="hover:opacity-80">Hello</.link>
+        </nav>
+
+        <div :if={@render_friend_widget?} class="relative">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            phx-click={JS.toggle(to: "#friends-panel")}
+          >
+            Friends
+          </button>
+
+          <div
+            id="friends-panel"
+            class="hidden absolute right-0 top-10 z-50 w-96 max-h-[80vh] overflow-y-auto card bg-base-100 shadow-2xl border border-base-200"
+            phx-click-away={JS.hide(to: "#friends-panel")}
+          >
+            <.live_component
+              module={SeshonWeb.FriendshipsWidget}
+              id="friends-panel-component"
+              current_scope={@current_scope}
+              mode={:panel}
+            />
+          </div>
+        </div>
+
+        <div>
+          <.theme_toggle />
+        </div>
       </div>
     </header>
 
     <main class="px-4 py-20 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
+        <%= if @inner_block != [] do %>
+          {render_slot(@inner_block)}
+        <% else %>
+          {@inner_content}
+        <% end %>
       </div>
     </main>
 
