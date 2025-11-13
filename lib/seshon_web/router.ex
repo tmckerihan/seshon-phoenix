@@ -50,11 +50,18 @@ defmodule SeshonWeb.Router do
   scope "/", SeshonWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    resources "/events", EventController
+    # resources "/events", EventController
     resources "/events_db", EventDbController
 
     live_session :require_authenticated_user,
-      on_mount: [{SeshonWeb.UserAuth, :require_authenticated}] do
+      on_mount: [
+        {SeshonWeb.UserAuth, :require_authenticated},
+        {SeshonWeb.Hooks.Friendships, :inject_friendship_results}
+      ] do
+      live "/hello", HelloLive, :show
+      live "/events", EventsLive.Index, :index
+      live "/events/:id", EventsLive.Show, :show
+      live "/events/:id/edit", EventsLive.Edit, :edit
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
       live "/friendships", Friendships, :render
@@ -69,11 +76,12 @@ defmodule SeshonWeb.Router do
     live_session :public_pages,
       on_mount: [{SeshonWeb.UserAuth, :mount_current_scope}],
       layout: {SeshonWeb.Layouts, :app} do
-      live "/hello", HelloLive, :show
     end
 
     live_session :current_user,
-      on_mount: [{SeshonWeb.UserAuth, :mount_current_scope}] do
+      on_mount: [
+        {SeshonWeb.UserAuth, :mount_current_scope}
+      ] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new

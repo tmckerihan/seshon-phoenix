@@ -1,0 +1,22 @@
+<Layouts.app socket={@socket} flash={@flash} current_scope={@current_scope}>
+  <.header>
+    Edit Event {@event.title}
+    <:subtitle>Use this form to manage event records in your database.</:subtitle>
+  </.header>
+  <.form
+    for={@form}
+    action={~p"/events/#{@event}"}
+    method="patch"
+    phx-change="validate"
+    phx-submit="save"
+  >
+    <.input field={@form[:title]} type="text" label="Title" />
+    <.input field={@form[:description]} type="text" label="Description" />
+    <.input field={@form[:location]} type="text" label="Location" />
+    <.input field={@form[:date]} type="datetime-local" label="Date" />
+    <.input field={@form[:icon]} type="text" label="Icon" />
+    <footer>
+      <.button variant="primary">Save Event</.button>
+    </footer>
+  </.form>
+</Layouts.app>

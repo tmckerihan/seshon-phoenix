@@ -12,15 +12,18 @@ defmodule SeshonWeb.HelloLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header>
-      Greetings
-      <:subtitle>A LiveView page automatically wrapped in the shared header layout.</:subtitle>
-    </.header>
+    <Layouts.app socket={@socket} flash={@flash} current_scope={@current_scope}>
+      <.header>
+        Greetings
+        <:subtitle>A LiveView page automatically wrapped in the shared header layout.</:subtitle>
+      </.header>
 
-    <p class="text-lg">
-      Hello from LiveView! Because this route opts into the `SeshonWeb.Layouts.app/1` layout,
-      the header/nav and flash handling render once around all page content.
-    </p>
+      <p class="text-lg">
+        Hello from LiveView! Because this route opts into the `SeshonWeb.Layouts.app/1` layout,
+        the header/nav and flash handling render once around all page content.
+      </p>
+      {@friendship_results}
+    </Layouts.app>
     """
   end
 end
