@@ -8,8 +8,9 @@ defmodule SeshonWeb.EventsLive.Edit do
   def mount(params, _session, socket) do
     changeset =
       Events.change_event(
-        socket.assigns.current_scope,
-        Events.get_event!(socket.assigns.current_scope, params["id"])
+        Events.get_event!(socket.assigns.current_scope, params["id"]),
+        %{},
+        socket.assigns.current_scope
       )
 
     {:ok,
@@ -19,12 +20,11 @@ defmodule SeshonWeb.EventsLive.Edit do
      )}
   end
 
+  @impl true
   def handle_event("validate", %{"event" => params}, socket) do
-    IO.inspect(params, label: "PARAMS")
-
     form =
       %Events.Event{}
-      |> Events.change_event(params)
+      |> Events.change_event(params, socket.assigns.current_scope)
       |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}

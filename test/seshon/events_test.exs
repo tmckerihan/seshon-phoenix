@@ -90,10 +90,10 @@ defmodule Seshon.EventsTest do
       assert_raise MatchError, fn -> Events.delete_event(other_scope, event) end
     end
 
-    test "change_event/2 returns a event changeset" do
+    test "change_event/3 returns a event changeset" do
       scope = user_scope_fixture()
       event = event_fixture(scope)
-      assert %Ecto.Changeset{} = Events.change_event(scope, event)
+      assert %Ecto.Changeset{} = Events.change_event(event, %{}, scope)
     end
   end
 end

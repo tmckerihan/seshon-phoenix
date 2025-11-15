@@ -11,7 +11,7 @@ defmodule SeshonWeb.EventController do
 
   def new(conn, _params) do
     changeset =
-      Events.change_event(conn.assigns.current_scope, %Event{})
+      Events.change_event(%Event{}, %{}, conn.assigns.current_scope)
 
     data = Events.list_associated_events(conn.assigns.current_scope, 10)
     render(conn, :new, changeset: changeset, data: data)
@@ -38,7 +38,7 @@ defmodule SeshonWeb.EventController do
 
   def edit(conn, %{"id" => id}) do
     event = Events.get_event!(conn.assigns.current_scope, id)
-    changeset = Events.change_event(conn.assigns.current_scope, event)
+    changeset = Events.change_event(event, %{}, conn.assigns.current_scope)
     render(conn, :edit, event: event, changeset: changeset)
   end
 

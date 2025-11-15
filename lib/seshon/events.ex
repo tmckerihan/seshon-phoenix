@@ -218,7 +218,7 @@ defmodule Seshon.Events do
       %Ecto.Changeset{data: %Event{}}
 
   """
-  def change_event(%Scope{} = scope, %Event{} = event, attrs \\ %{}) do
+  def change_event(%Event{} = event, attrs \\ %{}, %Scope{} = scope) do
     Event.changeset(event, attrs, scope)
   end
 end
