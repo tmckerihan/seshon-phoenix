@@ -36,11 +36,74 @@ defmodule SeshonWeb.EventCardComponent do
             {@event.event.description}
           </p>
         </div>
-        <div class="flex justify-between items-center border-t border-[#E0DCD5] pt-[1.2rem]">
-          <div class="flex justify-between items-center"></div>
+        <div class="flex justify-start items-center border-t border-[#E0DCD5] pt-[1.2rem]">
+          <%= if !@event.is_owner do %>
+            <.event_response event={@event.event} owner_name={@event.owner_name} />
+          <% end %>
         </div>
       </article>
     </a>
     """
+  end
+
+  def event_response(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:owner_name, fn -> nil end)
+      |> assign_new(:response_options, &default_response_options/0)
+
+    ~H"""
+    <section class="w-full">
+      <div class="w-full rounded-2xl border border-base-200 bg-base-100/80 p-4">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+          <button
+            :for={option <- @response_options}
+            type="button"
+            class={[
+              "btn btn-sm sm:btn-md btn-outline grow justify-start gap-3 rounded-2xl border-base-300 bg-base-100 text-left transition hover:border-base-content/40 hover:bg-base-200",
+              option.class
+            ]}
+            data-response={option.id}
+          >
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-base-200 text-base-content/80">
+              <.icon name={option.icon} class="h-5 w-5" />
+            </div>
+            <div class="flex flex-col leading-tight">
+              <span class="text-sm font-semibold">{option.label}</span>
+              <span :if={option.description} class="text-xs text-base-content/60">
+                {option.description}
+              </span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+    """
+  end
+
+  defp default_response_options do
+    [
+      %{
+        id: "going",
+        label: "Going",
+        description: "Count me in",
+        icon: "hero-hand-thumb-up",
+        class: "hover:border-primary hover:text-primary"
+      },
+      %{
+        id: "maybe",
+        label: "Maybe",
+        description: "Depends how the day goes",
+        icon: "hero-sparkles",
+        class: "hover:border-secondary hover:text-secondary"
+      },
+      %{
+        id: "decline",
+        label: "Not going",
+        description: "Catch y'all next time",
+        icon: "hero-hand-thumb-down",
+        class: "hover:border-error hover:text-error"
+      }
+    ]
   end
 end

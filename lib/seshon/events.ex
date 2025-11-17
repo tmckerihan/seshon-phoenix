@@ -6,8 +6,9 @@ defmodule Seshon.Events do
   import Ecto.Query, warn: false
   alias Seshon.Repo
 
-  alias Seshon.Events.Event
+  alias Seshon.Events.{Event, UserEvent}
   alias Seshon.Accounts.Scope
+  alias Seshon.Friendships.Friendship
 
   @doc """
   Subscribes to scoped notifications about any event changes.
@@ -64,46 +65,51 @@ defmodule Seshon.Events do
 
   """
   def list_associated_events(%Scope{} = scope, limit \\ 20, offset \\ 0) do
-    # Get all friends of the user (both user_1 and user_2)
-    friend_ids =
-      from(fs in "friendships",
-        where:
-          fs.accepted == true and (fs.user_1 == ^scope.user.id or fs.user_2 == ^scope.user.id),
+    friend_ids_subquery =
+      from(f in Friendship,
+        where: f.accepted == true,
         select:
           fragment(
             "CASE WHEN ? = ? THEN ? ELSE ? END",
-            fs.user_1,
+            f.user_1,
             ^scope.user.id,
-            fs.user_2,
-            fs.user_1
+            f.user_2,
+            f.user_1
           )
       )
-      |> Repo.all()
 
-    # Get events for the user and all their friends
-    user_and_friend_ids = [scope.user.id | friend_ids]
+    user_ids = [scope.user.id | Repo.all(friend_ids_subquery)]
+
+    participant_events_subquery =
+      from(ue in UserEvent,
+        where: ue.user_id in ^user_ids,
+        select: %{event_id: ue.event_id},
+        distinct: true
+      )
 
     from(e in Event,
-      join: ue in "user_events",
-      on: ue.event_id == e.id,
-      join: u in "users",
-      on: u.id == ue.user_id,
-      where: ue.user_id in ^user_and_friend_ids,
+      join: participant_event in subquery(participant_events_subquery),
+      on: participant_event.event_id == e.id,
+      left_join: current_user_ue in UserEvent,
+      on: current_user_ue.event_id == e.id and current_user_ue.user_id == ^scope.user.id,
       select: %{
         event: e,
-        is_owner: ue.is_owner,
-        status: ue.status,
+        is_owner: fragment("COALESCE(?, false)", current_user_ue.is_owner),
+        status: fragment("COALESCE(?, ?)", current_user_ue.status, "NOT_GOING"),
         owner_name:
           fragment(
-            "CASE WHEN ? THEN ? || ' ' || ? ELSE (SELECT u2.first_name || ' ' || u2.last_name FROM user_events ue2 INNER JOIN users u2 ON u2.id = ue2.user_id WHERE ue2.event_id = ? AND ue2.is_owner = true) END",
-            ue.is_owner,
-            u.first_name,
-            u.last_name,
+            """
+            (SELECT u.first_name || ' ' || u.last_name
+             FROM user_events ue
+             INNER JOIN users u ON u.id = ue.user_id
+             WHERE ue.event_id = ? AND ue.is_owner = true
+             LIMIT 1)
+            """,
             e.id
           )
       }
     )
-    |> order_by([e, ue, u], desc: e.date)
+    |> order_by([e, _participant_event, _current_user_ue], desc: e.date)
     |> limit(^limit)
     |> offset(^offset)
     |> Repo.all()
@@ -123,7 +129,7 @@ defmodule Seshon.Events do
       ** (Ecto.NoResultsError)
 
   """
-  def get_event!(%Scope{} = scope, id) do
+  def get_event!(%Scope{} = _scope, id) do
     Repo.get_by!(Event, id: id)
   end
 
