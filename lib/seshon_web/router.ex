@@ -20,7 +20,7 @@ defmodule SeshonWeb.Router do
   scope "/", SeshonWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    # get "/", PageController, :home
   end
 
   # Other scopes may use custom stacks.
@@ -59,7 +59,7 @@ defmodule SeshonWeb.Router do
         {SeshonWeb.Hooks.Friendships, :inject_friendship_results}
       ] do
       live "/hello", HelloLive, :show
-      live "/events", EventsLive.Index, :index
+      live "/", EventsLive.Index, :index
       live "/events/new", EventsLive.New, :new
       live "/events/:id", EventsLive.Show, :show
       live "/events/:id/edit", EventsLive.Edit, :edit
