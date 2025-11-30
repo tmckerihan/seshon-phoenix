@@ -196,6 +196,39 @@ defmodule Seshon.Events do
   end
 
   @doc """
+  Respond to an event.
+
+  ## Examples
+
+      iex> respond_to_event(event, %{field: value})
+      {:ok, %Event{}}
+
+      iex> respond_to_event(event, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+  """
+  def respond_to_event(event_id, %{"status" => status}, %Scope{} = scope) do
+    %Seshon.Events.UserEvent{}
+    |> Seshon.Events.UserEvent.changeset(%{
+      user_id: scope.user.id,
+      event_id: event_id,
+      status: status,
+      is_owner: false
+    })
+    |> Repo.insert(
+      on_conflict: {:replace, [:status]},
+      conflict_target: [:user_id, :event_id]
+    )
+    |> case do
+      {:ok, user_event} ->
+        broadcast(scope, {:responded, user_event})
+        {:ok, user_event}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
   Deletes a event.
 
   ## Examples

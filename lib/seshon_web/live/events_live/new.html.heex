@@ -1,0 +1,58 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js">
+  </script>
+  <.header>
+    New Event
+    <:subtitle>Use this form to manage event records in your database.</:subtitle>
+  </.header>
+
+  <.form for={@form} id="event-form" phx-change="validate" phx-submit="save">
+    <.input field={@form[:title]} type="text" label="Title" />
+    <.input field={@form[:description]} type="text" label="Description" />
+    <.input field={@form[:location]} type="text" label="Location" />
+    <.input field={@form[:date]} type="datetime-local" label="Date" />
+    <.input field={@form[:icon]} type="hidden" id="icon-input" />
+    <button
+      type="button"
+      id="icon-trigger"
+      phx-click={JS.toggle(to: "#emoji-picker")}
+      phx-click-away={JS.hide(to: "#emoji-picker")}
+      class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-12 h-12 flex items-center justify-center cursor-pointer"
+    >
+      <span id="icon-trigger-text" class="text-2xl">+</span>
+    </button>
+
+    <emoji-picker id="emoji-picker" class="hidden"></emoji-picker>
+
+    <footer>
+      <.button variant="primary">Save Event</.button>
+      <.link navigate={~p"/events"} class="button">Cancel</.link>
+    </footer>
+  </.form>
+</Layouts.app>
+
+<script>
+  const emojiPicker = document.getElementById('emoji-picker');
+  const iconInput = document.getElementById('icon-input');
+  const iconTriggerText = document.getElementById('icon-trigger-text');
+
+  if (iconInput && iconTriggerText && iconInput.value) {
+    iconTriggerText.textContent = iconInput.value;
+  }
+
+  emojiPicker?.addEventListener('emoji-click', event => {
+    const emoji = event.detail.unicode;
+
+    if (iconTriggerText) {
+      iconTriggerText.textContent = emoji;
+    }
+
+    if (iconInput) {
+      iconInput.value = emoji;
+    }
+
+    if (emojiPicker) {
+      emojiPicker.style.display = 'none';
+    }
+  });
+</script>

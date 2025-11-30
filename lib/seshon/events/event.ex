@@ -2,6 +2,7 @@ defmodule Seshon.Events.Event do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, UUIDv7, autogenerate: true}
   schema "events" do
     field :title, :string
     field :description, :string

@@ -8,7 +8,7 @@ defmodule Seshon.Events.UserEvent do
     field :status, :string
 
     belongs_to :user, Seshon.Accounts.User, primary_key: true
-    belongs_to :event, Seshon.Events.Event, primary_key: true
+    belongs_to :event, Seshon.Events.Event, primary_key: true, type: :binary_id
   end
 
   @doc false

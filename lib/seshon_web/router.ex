@@ -60,6 +60,7 @@ defmodule SeshonWeb.Router do
       ] do
       live "/hello", HelloLive, :show
       live "/events", EventsLive.Index, :index
+      live "/events/new", EventsLive.New, :new
       live "/events/:id", EventsLive.Show, :show
       live "/events/:id/edit", EventsLive.Edit, :edit
       live "/users/settings", UserLive.Settings, :edit
