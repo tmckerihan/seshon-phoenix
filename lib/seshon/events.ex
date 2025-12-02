@@ -106,6 +106,15 @@ defmodule Seshon.Events do
              LIMIT 1)
             """,
             e.id
+          ),
+        joining_count:
+          fragment(
+            """
+            (SELECT COUNT(*)
+             FROM user_events ue
+             WHERE ue.event_id = ? AND ue.status = 'GOING')
+            """,
+            e.id
           )
       }
     )
