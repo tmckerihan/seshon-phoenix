@@ -86,25 +86,41 @@ defmodule SeshonWeb.CoreComponents do
 
       <.button>Send!</.button>
       <.button phx-click="go" variant="primary">Send!</.button>
+      <.button variant="secondary">Cancel</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
   attr :rest, :global, include: ~w(href navigate patch)
-  attr :variant, :string, values: ~w(primary)
+  attr :variant, :string, values: ~w(primary secondary)
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
-    assigns = assign(assigns, :class, Map.fetch!(variants, assigns[:variant]))
+    variants = %{
+      "primary" => "btn-primary",
+      "secondary" => "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900 rounded-xl",
+      nil => "btn-primary btn-soft"
+    }
+
+    base_classes =
+      if assigns[:variant] == "secondary" do
+        "px-4 py-2 font-medium transition-colors"
+      else
+        "btn"
+      end
+
+    assigns =
+      assigns
+      |> assign(:class, Map.fetch!(variants, assigns[:variant]))
+      |> assign(:base_classes, base_classes)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={["btn", @class]} {@rest}>
+      <.link class={[@base_classes, @class]} {@rest}>
         {render_slot(@inner_block)}
       </.link>
       """
     else
       ~H"""
-      <button class={["btn", @class]} {@rest}>
+      <button class={[@base_classes, @class]} {@rest}>
         {render_slot(@inner_block)}
       </button>
       """

@@ -2,8 +2,7 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js">
   </script>
   <.header>
-    New Event
-    <:subtitle>Use this form to manage event records in your database.</:subtitle>
+    <h2 class="text-3xl font-serif text-stone-900">Organise</h2>
   </.header>
 
   <.form for={@form} id="event-form" phx-change="validate" phx-submit="save">
@@ -24,9 +23,9 @@
 
     <emoji-picker id="emoji-picker" class="hidden"></emoji-picker>
 
-    <footer>
-      <.button variant="primary">Save Event</.button>
-      <.link navigate={~p"/events"} class="button">Cancel</.link>
+    <footer class="mt-8">
+      <.button variant="primary">Create</.button>
+      <.button navigate={~p"/events"} variant="secondary">Cancel</.button>
     </footer>
   </.form>
 </Layouts.app>

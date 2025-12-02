@@ -1,9 +1,9 @@
 <Layouts.app socket={@socket} flash={@flash} current_scope={@current_scope}>
   <.header>
-    Listing Events
+    <h2 class="text-3xl font-serif text-stone-900">Seshes</h2>
     <:actions>
-      <.button href={~p"/events/new"}>
-        <.icon name="hero-plus" /> New Event
+      <.button href={~p"/events/new"} variant="primary" class="btn-soft max-w-10">
+        <.icon name="hero-plus" class="w-6 h-6" />
       </.button>
     </:actions>
   </.header>
@@ -21,7 +21,7 @@
         <h3 class="text-lg font-semibold text-base-content/70 mb-2">No events yet</h3>
         <p class="text-base-content/50 mb-6">Create your first event to get started!</p>
         <.link navigate={~p"/events/new"} class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" /> Create Event
+          <.icon name="hero-plus" class="w-4 h-4" />
         </.link>
       </div>
     </div>
