@@ -89,14 +89,15 @@ defmodule SeshonWeb.CoreComponents do
       <.button variant="secondary">Cancel</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
-  attr :rest, :global, include: ~w(href navigate patch)
+  attr :rest, :global, include: ~w(href navigate patch class)
   attr :variant, :string, values: ~w(primary secondary)
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
     variants = %{
       "primary" => "btn-primary",
-      "secondary" => "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900 rounded-xl",
+      "secondary" =>
+        "inline-block bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900 rounded-xl",
       nil => "btn-primary btn-soft"
     }
 
@@ -107,12 +108,25 @@ defmodule SeshonWeb.CoreComponents do
         "btn"
       end
 
+    variant_class = Map.fetch!(variants, assigns[:variant])
+    incoming_class = rest[:class]
+
+    # Merge variant class with incoming class (filter out nil)
+    merged_variant_class = [variant_class, incoming_class] |> Enum.filter(&(!is_nil(&1)))
+
+    # Remove class from rest since we're handling it separately
+    rest_without_class = Map.delete(rest, :class)
+
+    # Check for navigation attributes before modifying rest
+    has_navigation = !is_nil(rest[:href]) || !is_nil(rest[:navigate]) || !is_nil(rest[:patch])
+
     assigns =
       assigns
-      |> assign(:class, Map.fetch!(variants, assigns[:variant]))
+      |> assign(:class, merged_variant_class)
       |> assign(:base_classes, base_classes)
+      |> assign(:rest, rest_without_class)
 
-    if rest[:href] || rest[:navigate] || rest[:patch] do
+    if has_navigation do
       ~H"""
       <.link class={[@base_classes, @class]} {@rest}>
         {render_slot(@inner_block)}
