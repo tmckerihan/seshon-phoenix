@@ -28,8 +28,17 @@ defmodule SeshonWeb.CoreComponents do
   """
   use Phoenix.Component
   use Gettext, backend: SeshonWeb.Gettext
+  use SeshonWeb, :verified_routes
 
   alias Phoenix.LiveView.JS
+  alias Seshon.Accounts.User
+
+  @avatar_sizes %{
+    "xs" => "w-6 h-6 text-[10px]",
+    "sm" => "w-8 h-8 text-xs",
+    "md" => "w-10 h-10 text-sm",
+    "lg" => "w-12 h-12 text-base"
+  }
 
   @doc """
   Renders flash notices.
@@ -436,6 +445,97 @@ defmodule SeshonWeb.CoreComponents do
     ~H"""
     <span class={[@name, @class]} />
     """
+  end
+
+  @doc """
+  Renders a user avatar, falling back to user initials when no thumbnail is present.
+  """
+  attr :user, :map, required: true
+  attr :size, :string, default: "md", values: ~w(xs sm md lg)
+  attr :class, :any, default: nil
+
+  def avatar(assigns) do
+    assigns =
+      assigns
+      |> assign(:size_classes, Map.fetch!(@avatar_sizes, assigns.size))
+      |> assign(:avatar_classes, avatar_classes(assigns.user, assigns.class))
+      |> assign(:avatar_label, avatar_label(assigns.user))
+
+    ~H"""
+    <div class={@avatar_classes}>
+      <div
+        class={[
+          @size_classes,
+          "rounded-full bg-base-300 text-base-content font-semibold leading-none text-center flex items-center justify-center overflow-hidden"
+        ]}
+      >
+        <img
+          :if={User.has_thumbnail?(@user)}
+          src={@user.thumbnail}
+          alt={@avatar_label}
+          class="w-full h-full object-cover"
+        />
+        <span :if={!User.has_thumbnail?(@user)}>{@user.initials || User.initials(@user)}</span>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders an avatar-driven dropdown for profile actions.
+  """
+  attr :user, :map, required: true
+  attr :sign_out_href, :string, default: "#"
+  attr :sign_out_method, :string, default: nil
+  attr :class, :any, default: nil
+
+  def profile_dropdown(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:display_name, fn -> avatar_label(assigns.user) end)
+
+    ~H"""
+    <div class={["dropdown dropdown-end dropdown-hover", @class]}>
+      <div tabindex="0" class="btn btn-ghost btn-circle">
+        <.avatar user={@user} size="sm" />
+      </div>
+      <ul
+        tabindex="0"
+        class="menu menu-sm dropdown-content mt-0 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+      >
+        <li class="menu-title">
+          <span class="text-sm font-semibold leading-tight">{@display_name}</span>
+          <span class="text-xs text-base-content/70 truncate">{@user.email}</span>
+        </li>
+        <li>
+          <.link href={~p"/users/log-out"} method="delete" class="flex items-center gap-2">
+            <.icon name="hero-arrow-right-start-on-rectangle" class="size-4" />
+            <span>Sign out</span>
+          </.link>
+        </li>
+      </ul>
+    </div>
+    """
+  end
+
+  defp avatar_label(%User{} = user) do
+    [user.first_name, user.last_name]
+    |> Enum.filter(&(is_binary(&1) and &1 != ""))
+    |> Enum.join(" ")
+    |> case do
+      "" -> user.email || "User avatar"
+      name -> name
+    end
+  end
+
+  defp avatar_classes(user, extra_class) do
+    [
+      "avatar",
+      !User.has_thumbnail?(user) && "placeholder",
+      !User.has_thumbnail?(user) && "avatar-placeholder",
+      extra_class
+    ]
+    |> Enum.reject(&(&1 == nil || &1 == false))
   end
 
   ## JS Commands

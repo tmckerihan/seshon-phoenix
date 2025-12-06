@@ -1,13 +1,14 @@
 defmodule SeshonWeb.EventsLive.Index do
   use SeshonWeb, :live_view
   alias Seshon.Events
+  alias Seshon.Friendships
   alias SeshonWeb.EventCardComponent
 
   @impl true
   def mount(_params, _session, socket) do
     events = Events.list_associated_events(socket.assigns.current_scope)
-    IO.inspect(events, label: "EVENTS")
-    {:ok, assign(socket, events: events)}
+    friends = Friendships.list_friendships(socket.assigns.current_scope)
+    {:ok, assign(socket, events: events, friends: friends)}
   end
 
   @impl true

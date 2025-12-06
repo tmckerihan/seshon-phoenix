@@ -48,6 +48,13 @@ defmodule Seshon.Friendships do
     )
   end
 
+  def list_friendships_with_users(%Scope{} = scope) do
+    Friendship
+    |> where([f], f.user_1 == ^scope.user.id or f.user_2 == ^scope.user.id)
+    |> preload([:user_one, :user_two])
+    |> Repo.all()
+  end
+
   @doc """
   Gets a single friendship.
 
@@ -166,6 +173,8 @@ defmodule Seshon.Friendships do
   end
 
   def search_users_with_friendships_by_name(query, current_user_id, opts \\ [])
+
+  def search_users_with_friendships_by_name(query, current_user_id, opts)
       when is_binary(query) and byte_size(query) > 0 do
     limit = Keyword.get(opts, :limit, 20)
 

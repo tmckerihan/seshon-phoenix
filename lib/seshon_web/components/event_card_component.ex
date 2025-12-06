@@ -4,8 +4,9 @@ defmodule SeshonWeb.EventCardComponent do
   def event_card(assigns) do
     ~H"""
     <!-- Plan Card Container -->
+    <a href={~p"/events/#{@event.event.id}"}>
     <div class="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-stone-100 w-full font-sans">
-      
+
     <!-- Header: User Info & Event Icon -->
       <div class="flex justify-between items-start mb-4">
         <div class="flex items-center gap-3">
@@ -19,35 +20,18 @@ defmodule SeshonWeb.EventCardComponent do
           </div>
           <!-- User Name -->
           <div class="flex flex-col">
-            <span class="text-sm font-semibold text-stone-900">Mike</span>
+            <span class="text-sm font-semibold text-stone-900">{@event.owner_name}</span>
             <span class="text-xs text-stone-500">is planning...</span>
           </div>
         </div>
-        
+
     <!-- Icon Circle (Amber Theme) -->
-        <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
-          <!-- Lucide Icon: Camera -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="opacity-80"
-          >
-            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle
-              cx="12"
-              cy="13"
-              r="3"
-            />
-          </svg>
+        <!-- outline icon -->
+        <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 shadow-sm">
+          {@event.event.icon}
         </div>
       </div>
-      
+
     <!-- Main Content -->
       <div class="mb-6">
         <!-- Title (Serif Font) -->
@@ -61,7 +45,7 @@ defmodule SeshonWeb.EventCardComponent do
         <p class="text-stone-600 text-sm leading-relaxed font-light mb-4">
           {@event.event.description}
         </p>
-        
+
     <!-- Details: Date & Location -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2 text-stone-500 text-xs tracking-wide uppercase font-medium">
@@ -111,7 +95,7 @@ defmodule SeshonWeb.EventCardComponent do
           </div>
         </div>
       </div>
-      
+
     <!-- Footer / Actions -->
       <div class="pt-4 border-t border-stone-100">
         <%= if !@event.is_owner do %>
@@ -124,6 +108,7 @@ defmodule SeshonWeb.EventCardComponent do
         <% end %>
       </div>
     </div>
+    </a>
     """
   end
 
@@ -143,7 +128,7 @@ defmodule SeshonWeb.EventCardComponent do
           <strong class="text-stone-800">{@joining_count}</strong> friends joining
         </span>
       </div>
-      
+
     <!-- Response Buttons -->
       <div class="flex gap-2">
         <div class="flex bg-stone-50 p-1 rounded-full border border-stone-100">

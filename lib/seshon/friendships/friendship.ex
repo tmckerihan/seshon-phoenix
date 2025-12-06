@@ -2,9 +2,11 @@ defmodule Seshon.Friendships.Friendship do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Seshon.Accounts.User
+
   schema "friendships" do
-    field :user_1, :id
-    field :user_2, :id
+    belongs_to :user_one, User, foreign_key: :user_1
+    belongs_to :user_two, User, foreign_key: :user_2
     field :accepted, :boolean, default: false
 
     timestamps(type: :utc_datetime)

@@ -1,5 +1,4 @@
 defmodule Seshon.Accounts.User do
-  alias Hex.API.User
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -12,6 +11,7 @@ defmodule Seshon.Accounts.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
     field :thumbnail, :string
+    field :initials, :string, virtual: true
 
     timestamps(type: :utc_datetime)
   end
@@ -141,4 +141,19 @@ defmodule Seshon.Accounts.User do
     Bcrypt.no_user_verify()
     false
   end
+
+  def has_thumbnail?(%__MODULE__{} = user), do: user.thumbnail not in [nil, ""]
+
+  def with_initials(%__MODULE__{} = user), do: %{user | initials: initials(user)}
+
+  def initials(%__MODULE__{} = user) do
+    [user.first_name, user.last_name]
+    |> Enum.map(&first_letter/1)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join()
+    |> String.upcase()
+  end
+
+  defp first_letter(value) when is_binary(value) and value != "", do: String.first(value)
+  defp first_letter(_), do: nil
 end

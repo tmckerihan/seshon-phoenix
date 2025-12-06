@@ -69,17 +69,7 @@ defmodule SeshonWeb.FriendshipsWidget do
         <li :for={result <- @results} class="p-3 text-sm">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-              <div class="avatar w-10 h-10 rounded-full bg-base-300 flex items-center justify-center text-base font-semibold">
-                <%= if has_thumbnail?(result) do %>
-                  <img
-                    src={result.user.thumbnail}
-                    alt={result.user.first_name}
-                    class="w-full h-full object-cover rounded-full"
-                  />
-                <% else %>
-                  {get_user_initials(result.user)}
-                <% end %>
-              </div>
+              <.avatar user={result.user} size="md" />
               <div>
                 <p class="font-medium">
                   {result.user.first_name} {result.user.last_name}
@@ -174,16 +164,6 @@ defmodule SeshonWeb.FriendshipsWidget do
   end
 
   defp notice_classes(_), do: "text-xs"
-
-  defp has_thumbnail?(result) do
-    result.user.thumbnail && result.user.thumbnail != "" && result.user.thumbnail != nil
-  end
-
-  defp get_user_initials(user) do
-    first_initial = String.first(user.first_name || "")
-    last_initial = String.first(user.last_name || "")
-    "#{first_initial}#{last_initial}" |> String.upcase()
-  end
 
   attr :status, :any, required: true
   attr :user, :map, required: true

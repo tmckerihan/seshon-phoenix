@@ -12,16 +12,12 @@ defmodule SeshonWeb.Layouts do
   embed_templates "layouts/*"
 
   attr :flash, :map, default: %{}
+  attr :socket, Phoenix.LiveView.Socket, default: nil
   attr :current_scope, :any, default: nil
   attr :inner_content, :any, default: nil
   slot :inner_block
 
   def app(assigns) do
-    assigns =
-      assign_new(assigns, :render_friend_widget?, fn ->
-        Map.has_key?(assigns, :socket) && not is_nil(assigns[:current_scope])
-      end)
-
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
@@ -31,34 +27,6 @@ defmodule SeshonWeb.Layouts do
         </a>
       </div>
       <div class="flex-none flex items-center gap-4 text-sm">
-        <nav class="flex items-center gap-4 font-medium">
-          <.link href={~p"/"} class="hover:opacity-80">Home</.link>
-          <.link href={~p"/hello"} class="hover:opacity-80">Hello</.link>
-        </nav>
-
-        <div :if={@render_friend_widget?} class="relative">
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm"
-            phx-click={JS.toggle(to: "#friends-panel")}
-          >
-            Friends
-          </button>
-
-          <div
-            id="friends-panel"
-            class="hidden absolute right-0 top-10 z-50 w-96 max-h-[80vh] overflow-y-auto card bg-base-100 shadow-2xl border border-base-200"
-            phx-click-away={JS.hide(to: "#friends-panel")}
-          >
-            <.live_component
-              module={SeshonWeb.FriendshipsWidget}
-              id="friends-panel-component"
-              current_scope={@current_scope}
-              mode={:panel}
-            />
-          </div>
-        </div>
-
         <div>
           <.theme_toggle />
         </div>
