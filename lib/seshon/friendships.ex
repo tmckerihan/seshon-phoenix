@@ -3,12 +3,16 @@ defmodule Seshon.Friendships do
   The Friendships context.
   """
 
+  import Ecto.Changeset, only: [get_field: 2]
   import Ecto.Query, warn: false
   alias Seshon.Repo
 
+  alias Seshon.Accounts
   alias Seshon.Friendships.Friendship
   alias Seshon.Accounts.Scope
   alias Seshon.Accounts.User
+  alias Seshon.Mailer
+  alias Swoosh.Email
 
   @doc """
   Subscribes to scoped notifications about any friendship changes.
@@ -50,7 +54,7 @@ defmodule Seshon.Friendships do
 
   def list_friendships_with_users(%Scope{} = scope) do
     Friendship
-    |> where([f], f.user_1 == ^scope.user.id or f.user_2 == ^scope.user.id)
+    |> where([f], (f.user_1 == ^scope.user.id or f.user_2 == ^scope.user.id) and f.accepted == true)
     |> preload([:user_one, :user_two])
     |> Repo.all()
   end
@@ -179,7 +183,12 @@ defmodule Seshon.Friendships do
     limit = Keyword.get(opts, :limit, 20)
 
     User
-    |> where([u], ilike(u.first_name, ^"%#{query}%") or ilike(u.last_name, ^"%#{query}%"))
+    |> where(
+      [u],
+      ilike(u.first_name, ^"%#{query}%") or
+        ilike(u.last_name, ^"%#{query}%") or
+        ilike(u.email, ^"%#{query}%")
+    )
     |> where([u], u.id != ^current_user_id)
     |> join(:left, [u], f in Friendship, on: f.user_1 == u.id or f.user_2 == u.id)
     |> select([u, f], %{
@@ -194,6 +203,75 @@ defmodule Seshon.Friendships do
   end
 
   def search_users_with_friendships_by_name(_, _, _), do: []
+
+  def invite_user_by_email(%Scope{} = scope, email, invite_url \\ SeshonWeb.Endpoint.url()) do
+    normalized_email = normalize_email(email)
+
+    with {:ok, valid_email} <- validate_invite_email(normalized_email),
+         nil <- Accounts.get_user_by_email(valid_email),
+         {:ok, _} <- deliver_invite_email(scope, valid_email, invite_url) do
+      {:ok, valid_email}
+    else
+      {:error, :invalid_email} -> {:error, :invalid_email}
+      %User{} -> {:error, :user_exists}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def valid_invite_email?(email) do
+    case validate_invite_email(normalize_email(email)) do
+      {:ok, _} -> true
+      _ -> false
+    end
+  end
+
+  defp validate_invite_email(email) when is_binary(email) and email != "" do
+    %User{}
+    |> User.email_changeset(%{email: email}, validate_email: false)
+    |> case do
+      %{valid?: true} = changeset -> {:ok, get_field(changeset, :email)}
+      _changeset -> {:error, :invalid_email}
+    end
+  end
+
+  defp validate_invite_email(_), do: {:error, :invalid_email}
+
+  defp deliver_invite_email(%Scope{} = scope, email, invite_url) do
+    inviter_name = display_name(scope.user)
+
+    Email.new()
+    |> Email.to(email)
+    |> Email.from({"Seshon", "contact@example.com"})
+    |> Email.subject("#{inviter_name} invited you to Seshon")
+    |> Email.text_body("""
+    Hi there,
+
+    #{inviter_name} is trying to connect with you on Seshon.
+
+    Join them here: #{invite_url}
+
+    If you weren't expecting this invite, you can ignore this email.
+    """)
+    |> Mailer.deliver()
+    |> case do
+      {:ok, _metadata} -> {:ok, email}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp display_name(%User{} = user) do
+    [user.first_name, user.last_name]
+    |> Enum.reject(&blank?/1)
+    |> case do
+      [] -> user.email
+      names -> Enum.join(names, " ")
+    end
+  end
+
+  defp blank?(value), do: is_nil(value) or value == ""
+
+  defp normalize_email(email) when is_binary(email), do: String.trim(email)
+  defp normalize_email(_), do: ""
 
   @doc """
   Finds an existing friendship between two users.

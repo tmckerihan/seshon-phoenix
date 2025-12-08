@@ -14,6 +14,7 @@ defmodule SeshonWeb.FriendshipsWidget do
       |> assign_new(:results, fn -> [] end)
       |> assign_new(:search, fn -> "" end)
       |> assign_new(:notice, fn -> nil end)
+      |> assign_new(:search_is_email, fn -> false end)
       |> assign_new(:mode, fn -> :panel end)
 
     {:ok, socket}
@@ -61,9 +62,23 @@ defmodule SeshonWeb.FriendshipsWidget do
         Start typing to search for people you can add.
       </p>
 
-      <p :if={@results == [] && @search != ""} class="text-sm text-base-content/70">
-        No users found for "{@search}".
-      </p>
+      <div :if={@results == [] && @search != ""} class="space-y-2 text-sm text-base-content/70">
+        <p>No users found for "{@search}".</p>
+
+        <div :if={@search_is_email} class="flex flex-wrap items-center gap-2">
+          <button
+            class="btn btn-primary btn-sm"
+            phx-target={@myself}
+            phx-click="send_invite_email"
+            phx-value-email={@search}
+          >
+            Invite {@search}
+          </button>
+          <span class="text-xs text-base-content/60">
+            We will email them an invite to join Seshon.
+          </span>
+        </div>
+      </div>
 
       <ul :if={@results != []} class="list bg-base-100 rounded-box shadow-sm divide-y divide-base-200">
         <li :for={result <- @results} class="p-3 text-sm">
@@ -98,13 +113,34 @@ defmodule SeshonWeb.FriendshipsWidget do
   end
 
   def handle_event("search", %{"query" => query}, socket) do
+    trimmed_query = String.trim(query)
+
     results =
       Friendships.search_users_with_friendships_by_name(
-        query,
+        trimmed_query,
         socket.assigns.current_scope.user.id
       )
 
-    {:noreply, socket |> assign(search: query, results: results) |> assign(:notice, nil)}
+    {:noreply,
+     socket
+     |> assign(search: trimmed_query, results: results, search_is_email: Friendships.valid_invite_email?(trimmed_query))
+     |> assign(:notice, nil)}
+  end
+
+  def handle_event("send_invite_email", %{"email" => email}, socket) do
+    case Friendships.invite_user_by_email(socket.assigns.current_scope, email) do
+      {:ok, sent_email} ->
+        {:noreply, assign(socket, :notice, {:info, "Invite sent to #{sent_email}"})}
+
+      {:error, :invalid_email} ->
+        {:noreply, assign(socket, :notice, {:error, "Enter a valid email to send an invite"})}
+
+      {:error, :user_exists} ->
+        {:noreply, assign(socket, :notice, {:error, "That email is already registered on Seshon"})}
+
+      {:error, _reason} ->
+        {:noreply, assign(socket, :notice, {:error, "We couldn't send that invite. Please try again."})}
+    end
   end
 
   def handle_event("request_friendship", %{"user_id" => user_id}, socket) do

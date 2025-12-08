@@ -508,6 +508,12 @@ defmodule SeshonWeb.CoreComponents do
           <span class="text-xs text-base-content/70 truncate">{@user.email}</span>
         </li>
         <li>
+          <.link href={~p"/users/settings"} class="flex items-center gap-2">
+            <.icon name="hero-cog-6-tooth" class="size-4" />
+            <span>Settings</span>
+          </.link>
+        </li>
+        <li>
           <.link href={~p"/users/log-out"} method="delete" class="flex items-center gap-2">
             <.icon name="hero-arrow-right-start-on-rectangle" class="size-4" />
             <span>Sign out</span>

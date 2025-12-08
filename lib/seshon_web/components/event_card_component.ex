@@ -1,26 +1,23 @@
 defmodule SeshonWeb.EventCardComponent do
   use SeshonWeb, :html
+  alias Seshon.Accounts.User
 
   def event_card(assigns) do
     ~H"""
     <!-- Plan Card Container -->
-    <a href={~p"/events/#{@event.event.id}"}>
-    <div class="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-stone-100 w-full font-sans">
+    <a href={~p"/events/#{@event.event.id}"} class="block h-full">
+    <div class="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-stone-100 w-full font-sans h-full min-h-[20rem] flex flex-col">
 
     <!-- Header: User Info & Event Icon -->
       <div class="flex justify-between items-start mb-4">
         <div class="flex items-center gap-3">
           <!-- Avatar -->
-          <div class="w-10 h-10 rounded-full bg-stone-100 overflow-hidden">
-            <img
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop"
-              alt="User"
-              class="w-full h-full object-cover"
-            />
-          </div>
+          <.avatar user={@event.owner} size="md" class="shrink-0" />
           <!-- User Name -->
           <div class="flex flex-col">
-            <span class="text-sm font-semibold text-stone-900">{@event.owner_name}</span>
+            <span class="text-sm font-semibold text-stone-900">
+              {owner_display_name(@event.owner)}
+            </span>
             <span class="text-xs text-stone-500">is planning...</span>
           </div>
         </div>
@@ -33,7 +30,7 @@ defmodule SeshonWeb.EventCardComponent do
       </div>
 
     <!-- Main Content -->
-      <div class="mb-6">
+      <div class="mb-6 flex-1">
         <!-- Title (Serif Font) -->
         <h3
           class="text-2xl font-serif text-stone-900 leading-tight mb-2"
@@ -42,7 +39,7 @@ defmodule SeshonWeb.EventCardComponent do
           {@event.event.title}
         </h3>
         <!-- Description -->
-        <p class="text-stone-600 text-sm leading-relaxed font-light mb-4">
+        <p class="text-stone-600 text-sm leading-relaxed font-light mb-4 line-clamp-3 overflow-hidden">
           {@event.event.description}
         </p>
 
@@ -97,15 +94,13 @@ defmodule SeshonWeb.EventCardComponent do
       </div>
 
     <!-- Footer / Actions -->
-      <div class="pt-4 border-t border-stone-100">
-        <%= if !@event.is_owner do %>
+      <div class="pt-4 border-t border-stone-100 mt-auto">
           <.event_response
             event={@event.event}
-            owner_name={@event.owner_name}
+            is_owner={@event.is_owner}
             status={@event.status}
             joining_count={@event.joining_count || 0}
           />
-        <% end %>
       </div>
     </div>
     </a>
@@ -115,7 +110,6 @@ defmodule SeshonWeb.EventCardComponent do
   def event_response(assigns) do
     assigns =
       assigns
-      |> assign_new(:owner_name, fn -> nil end)
       |> assign_new(:response_options, &default_response_options/0)
       |> assign_new(:status, fn -> nil end)
       |> assign_new(:joining_count, fn -> 0 end)
@@ -125,33 +119,35 @@ defmodule SeshonWeb.EventCardComponent do
       <!-- Joining Count -->
       <div class="text-xs text-stone-400 font-medium">
         <span>
-          <strong class="text-stone-800">{@joining_count}</strong> friends joining
+          <strong class="text-stone-800">{@joining_count}</strong> friend{if @joining_count != 1, do: "s"} joining
         </span>
       </div>
 
     <!-- Response Buttons -->
-      <div class="flex gap-2">
-        <div class="flex bg-stone-50 p-1 rounded-full border border-stone-100">
-          <button
-            :for={option <- @response_options}
-            type="button"
-            class={[
-              "px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300",
-              if @status == option.id do
-                "bg-stone-800 text-white shadow-md"
-              else
-                "text-stone-500 hover:bg-stone-200"
-              end
-            ]}
-            phx-click="respond"
-            phx-value-response={option.id}
-            phx-value-event-id={@event.id}
-            onclick="event.preventDefault();"
-          >
-            {response_label(option.id)}
-          </button>
+      <%= if !@is_owner do %>
+        <div class="flex gap-2">
+          <div class="flex bg-stone-50 p-1 rounded-full border border-stone-100">
+            <button
+              :for={option <- @response_options}
+              type="button"
+              class={[
+                "px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300",
+                if @status == option.id do
+                  "bg-stone-800 text-white shadow-md"
+                else
+                  "text-stone-500 hover:bg-stone-200"
+                end
+              ]}
+              phx-click="respond"
+              phx-value-response={option.id}
+              phx-value-event-id={@event.id}
+              onclick="event.preventDefault();"
+            >
+              {response_label(option.id)}
+            </button>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
     """
   end
@@ -160,6 +156,20 @@ defmodule SeshonWeb.EventCardComponent do
   defp response_label("MAYBE"), do: "Maybe"
   defp response_label("NOT_GOING"), do: "Out"
   defp response_label(_), do: ""
+
+  defp owner_display_name(%User{} = owner) do
+    owner
+    |> Map.take([:first_name, :last_name])
+    |> Map.values()
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join(" ")
+    |> case do
+      "" -> owner.email
+      name -> name
+    end
+  end
+
+  defp owner_display_name(_), do: "Unknown"
 
   defp default_response_options do
     [

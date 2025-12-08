@@ -8,6 +8,7 @@ defmodule Seshon.Events do
 
   alias Seshon.Events.{Event, UserEvent}
   alias Seshon.Accounts.Scope
+  alias Seshon.Accounts.User
   alias Seshon.Friendships.Friendship
 
   @doc """
@@ -92,25 +93,19 @@ defmodule Seshon.Events do
       on: participant_event.event_id == e.id,
       left_join: current_user_ue in UserEvent,
       on: current_user_ue.event_id == e.id and current_user_ue.user_id == ^scope.user.id,
+      left_join: owner_ue in UserEvent,
+      on: owner_ue.event_id == e.id and owner_ue.is_owner == true,
+      left_join: owner in User,
+      on: owner.id == owner_ue.user_id,
       select: %{
         event: e,
         is_owner: fragment("COALESCE(?, false)", current_user_ue.is_owner),
         status: fragment("COALESCE(?, ?)", current_user_ue.status, "NOT_GOING"),
-        owner_name:
-          fragment(
-            """
-            (SELECT u.first_name || ' ' || u.last_name
-             FROM user_events ue
-             INNER JOIN users u ON u.id = ue.user_id
-             WHERE ue.event_id = ? AND ue.is_owner = true
-             LIMIT 1)
-            """,
-            e.id
-          ),
+        owner: owner,
         joining_count:
           fragment(
             """
-            (SELECT COUNT(*)
+            (SELECT COUNT(*) - 1
              FROM user_events ue
              WHERE ue.event_id = ? AND ue.status = 'GOING')
             """,
@@ -118,7 +113,7 @@ defmodule Seshon.Events do
           )
       }
     )
-    |> order_by([e, _participant_event, _current_user_ue], desc: e.date)
+    |> order_by([e, _participant_event, _current_user_ue, _owner_ue, _owner], desc: e.date)
     |> limit(^limit)
     |> offset(^offset)
     |> Repo.all()

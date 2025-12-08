@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :seshon, Seshon.Repo,
   username: "postgres",
-  password: "password",
+  password: "postgres",
   hostname: "localhost",
   database: "seshon_dev",
   stacktrace: true,
