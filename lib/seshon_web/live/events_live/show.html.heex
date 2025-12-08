@@ -1,22 +1,160 @@
 <Layouts.app socket={@socket} flash={@flash} current_scope={@current_scope}>
-  <.header>
-    Event {@event.id}
-    <:subtitle>This is a event record from your database.</:subtitle>
-    <:actions>
-      <.button navigate={~p"/events"}>
-        <.icon name="hero-arrow-left" />
-      </.button>
-      <.button variant="primary" navigate={~p"/events/#{@event}/edit?return_to=show"}>
-        <.icon name="hero-pencil-square" /> Edit event
-      </.button>
-    </:actions>
-  </.header>
+  <div class="min-h-screen bg-[#FDFBF7] text-stone-900">
+    <div class="sticky top-0 z-20 bg-[#FDFBF7]/90 backdrop-blur-md py-4 px-4 sm:px-6 lg:px-10 flex items-center justify-between">
+      <.link
+        navigate={~p"/"}
+        class="btn btn-ghost btn-sm gap-2 text-stone-500 hover:text-stone-900"
+      >
+        <.icon name="hero-arrow-left" class="size-4" />
+        <span>Back</span>
+      </.link>
+    </div>
 
-  <.list>
-    <:item title="Title">{@event.title}</:item>
-    <:item title="Description">{@event.description}</:item>
-    <:item title="Location">{@event.location}</:item>
-    <:item title="Date">{@event.date}</:item>
-    <:item title="Icon">{@event.icon}</:item>
-  </.list>
+    <div class="px-4 sm:px-6 lg:px-10 pb-32">
+      <div class="max-w-5xl mx-auto">
+        <section class="pt-2 md:pt-6">
+          <div class="flex items-center gap-3 mb-6 text-stone-400 text-[11px] font-semibold tracking-[0.2em] uppercase">
+            <div class="flex items-center gap-2 text-stone-900">
+              <.avatar :if={@owner} user={@owner} size="xs" class="shrink-0" />
+              <div :if={!@owner} class="avatar placeholder">
+                <div class="w-7 rounded-full bg-base-300 text-base-content/60 text-xs">?</div>
+              </div>
+              <span>{display_name(@owner)}</span>
+            </div>
+            <span class="text-stone-300">•</span>
+            <span class="flex items-center gap-2">
+              <span class="badge badge-outline badge-sm border-stone-200 bg-white text-stone-600">
+                {@event.icon}
+              </span>
+              <span class="text-stone-500">Vibe</span>
+            </span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-serif leading-[0.95] tracking-tight mb-10">
+            {@event.title}
+          </h1>
+
+          <div class="grid grid-cols-[auto_1fr] gap-x-10 gap-y-6 text-stone-900 border-l border-stone-900/80 pl-6 mb-12 py-2">
+            <div class="text-stone-400 text-xs font-bold uppercase tracking-[0.25em] pt-1.5">When</div>
+            <div>
+              <div class="font-serif text-2xl leading-none mb-1">{@formatted_time.weekday}</div>
+              <div class="text-stone-600 text-lg font-light">
+                {@formatted_time.date}
+                <span class="text-stone-300 mx-2">|</span>
+                {@formatted_time.time}
+              </div>
+            </div>
+
+            <div class="text-stone-400 text-xs font-bold uppercase tracking-[0.25em] pt-1.5">Where</div>
+            <div class="text-lg font-medium border-b border-stone-200 pb-1 inline-block self-start">
+              {@event.location}
+            </div>
+          </div>
+
+          <div class="prose prose-stone prose-lg max-w-3xl">
+            <p class="text-stone-600 font-light leading-relaxed text-xl">
+              {@event.description}
+            </p>
+          </div>
+        </section>
+
+        <section class="pt-12 border-t border-stone-100 mt-12">
+          <div class="flex items-baseline justify-between mb-8">
+            <h3 class="font-serif text-3xl text-stone-900">The Guest List</h3>
+            <span class="text-stone-400 text-sm">
+              {length(Map.get(@attendees_by_status, "GOING", []))} confirmed
+            </span>
+          </div>
+
+          <div class="space-y-10">
+            <div>
+              <%= if Map.get(@attendees_by_status, "GOING", []) != [] do %>
+                <div class="flex flex-wrap gap-4">
+                  <div
+                    :for={user <- Map.get(@attendees_by_status, "GOING", [])}
+                    class="group flex items-center gap-3 pr-5 pl-1 py-1 rounded-full bg-white border border-stone-100 hover:border-stone-200 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                  >
+                    <.avatar user={user} size="sm" class="shrink-0" />
+                    <span class="font-medium text-stone-900">{display_name(user)}</span>
+                  </div>
+                </div>
+              <% else %>
+                <div class="py-4 text-stone-400 italic font-light">
+                  It's quiet... be the first to join.
+                </div>
+              <% end %>
+            </div>
+
+            <%= if Map.get(@attendees_by_status, "MAYBE", []) != [] or
+                    Map.get(@attendees_by_status, "NOT_GOING", []) != [] do %>
+              <div class="pt-4">
+                <div class="text-xs font-bold text-stone-300 uppercase tracking-[0.25em] mb-4">Others</div>
+                <div class="flex flex-wrap gap-x-6 gap-y-3">
+                  <div
+                    :for={user <- Map.get(@attendees_by_status, "MAYBE", [])}
+                    class="flex items-center gap-2 opacity-70"
+                  >
+                    <.avatar user={user} size="xs" class="shrink-0" />
+                    <span class="text-stone-600 text-sm">
+                      {display_name(user)}
+                      <span class="text-amber-700 text-xs ml-1">(Maybe)</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="fixed bottom-6 left-0 right-0 flex justify-center px-4 z-40 pointer-events-none">
+      <div class="pointer-events-auto bg-stone-900 text-stone-200 p-2 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] flex items-center gap-1 max-w-xl w-full mx-auto ring-1 ring-white/10 backdrop-blur-xl">
+        <button
+          type="button"
+          phx-click="respond"
+          phx-value-response="GOING"
+          phx-value-event-id={@event.id}
+          class={[
+            "flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all duration-300",
+            @current_user_status == "GOING" && "bg-white text-stone-900 shadow-sm",
+            @current_user_status != "GOING" && "text-stone-300 hover:text-white hover:bg-white/10"
+          ]}
+        >
+          <.icon name="hero-check" class="size-4" />
+          <span>I'm In</span>
+        </button>
+
+        <button
+          type="button"
+          phx-click="respond"
+          phx-value-response="MAYBE"
+          phx-value-event-id={@event.id}
+          class={[
+            "flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all duration-300",
+            @current_user_status == "MAYBE" && "bg-stone-700 text-white",
+            @current_user_status != "MAYBE" && "text-stone-300 hover:text-white hover:bg-white/10"
+          ]}
+        >
+          <.icon name="hero-question-mark-circle" class="size-4" />
+          <span>Maybe</span>
+        </button>
+
+        <button
+          type="button"
+          phx-click="respond"
+          phx-value-response="NOT_GOING"
+          phx-value-event-id={@event.id}
+          class={[
+            "flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all duration-300",
+            @current_user_status == "NOT_GOING" && "bg-stone-700 text-white",
+            @current_user_status != "NOT_GOING" && "text-stone-300 hover:text-white hover:bg-white/10"
+          ]}
+        >
+          <.icon name="hero-x-mark" class="size-4" />
+          <span>No</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </Layouts.app>

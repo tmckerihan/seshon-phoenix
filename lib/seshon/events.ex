@@ -137,6 +137,30 @@ defmodule Seshon.Events do
     Repo.get_by!(Event, id: id)
   end
 
+  def get_event_detail!(%Scope{} = _scope, id) do
+    %{event: event, owner: owner} =
+      from(e in Event,
+        where: e.id == ^id,
+        left_join: owner_ue in UserEvent,
+        on: owner_ue.event_id == e.id and owner_ue.is_owner == true,
+        left_join: owner in User,
+        on: owner.id == owner_ue.user_id,
+        select: %{event: e, owner: owner}
+      )
+      |> Repo.one!()
+
+    responses =
+      from(ue in UserEvent,
+        where: ue.event_id == ^id,
+        join: u in User,
+        on: u.id == ue.user_id,
+        select: %{user: u, status: ue.status, is_owner: ue.is_owner}
+      )
+      |> Repo.all()
+
+    %{event: event, owner: owner, responses: responses}
+  end
+
   @doc """
   Creates a event.
 
