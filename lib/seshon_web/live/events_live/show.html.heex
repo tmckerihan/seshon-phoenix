@@ -1,159 +1,247 @@
 <Layouts.app socket={@socket} flash={@flash} current_scope={@current_scope}>
-  <div class="min-h-screen bg-[#FDFBF7] text-stone-900">
-    <div class="sticky top-0 z-20 bg-[#FDFBF7]/90 backdrop-blur-md py-4 px-4 sm:px-6 lg:px-10 flex items-center justify-between">
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap"
+  />
+
+  <style>
+    .font-hand { font-family: "Caveat", cursive; }
+    .font-serif { font-family: "Playfair Display", serif; }
+    .font-sans { font-family: "Inter", sans-serif; }
+    .bg-paper { background-color: #FDFBF7; }
+    .bg-paper-dark { background-color: #F5F2EA; }
+    .shadow-polaroid { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .shadow-floating { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    .bg-map-pattern { background-image: url("https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg"); }
+    .box-shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+    .inner-shadow { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); }
+  </style>
+
+  <div class="bg-paper min-h-screen text-stone-800 pb-32 font-sans">
+    <div class="sticky top-0 z-40 bg-paper/90 backdrop-blur-md px-4 py-4 flex items-center justify-between transition-all border-b border-transparent">
       <.link
         navigate={~p"/"}
-        class="btn btn-ghost btn-sm gap-2 text-stone-500 hover:text-stone-900"
+        class="group flex items-center gap-2 text-stone-500 hover:text-stone-900 transition-colors"
       >
-        <.icon name="hero-arrow-left" class="size-4" />
-        <span>Back</span>
+        <div class="rounded-full bg-white border border-stone-200 p-2 shadow-sm group-hover:scale-105 transition-transform">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+        </div>
+        <span class="font-hand text-xl font-bold pt-1 hidden sm:block">Back</span>
       </.link>
+
+      <button class="text-stone-400 hover:text-stone-900 transition-colors p-2 rounded-full hover:bg-stone-100">
+        <.icon name="hero-arrow-up-on-square" class="w-6 h-6" />
+      </button>
     </div>
 
-    <div class="px-4 sm:px-6 lg:px-10 pb-32">
-      <div class="max-w-5xl mx-auto">
-        <section class="pt-2 md:pt-6">
-          <div class="flex items-center gap-3 mb-6 text-stone-400 text-[11px] font-semibold tracking-[0.2em] uppercase">
-            <div class="flex items-center gap-2 text-stone-900">
-              <.avatar :if={@owner} user={@owner} size="xs" class="shrink-0" />
-              <div :if={!@owner} class="avatar placeholder">
-                <div class="w-7 rounded-full bg-base-300 text-base-content/60 text-xs">?</div>
-              </div>
-              <span>{display_name(@owner)}</span>
+    <main class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="flex flex-col md:flex-row gap-8 items-start py-6 border-b border-stone-100/50 mb-8">
+        <div class="relative shrink-0 mx-auto md:mx-0 pt-2">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-yellow-100/60 rotate-1 backdrop-blur-sm z-10 border-l border-r border-white/30 box-shadow-sm"></div>
+
+          <div class="bg-white p-3 pb-10 shadow-polaroid rotate-[-2deg] w-40 sm:w-48 border border-stone-100 transition-transform hover:rotate-0 duration-500 origin-top">
+            <div class="bg-blue-50 aspect-square w-full flex items-center justify-center border border-stone-100 inner-shadow relative overflow-hidden group">
+              <span class="text-6xl relative z-10 group-hover:scale-110 transition-transform duration-300">{@event.icon}</span>
             </div>
-            <span class="text-stone-300">•</span>
-            <span class="flex items-center gap-2">
-              <span class="badge badge-outline badge-sm border-stone-200 bg-white text-stone-600">
-                {@event.icon}
+            <div class="absolute bottom-3 left-0 right-0 text-center font-hand text-stone-500 font-bold text-xl leading-none">
+              {@event.title}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 w-full mt-2 md:mt-0">
+          <div class="flex justify-center md:justify-start mb-4">
+            <div class="inline-flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-stone-200 shadow-sm">
+              <.avatar :if={@owner} user={@owner} size="xs" class="w-5 h-5 rounded-full object-cover grayscale-[0.2]" />
+              <div :if={!@owner} class="avatar placeholder">
+                <div class="w-5 h-5 rounded-full bg-stone-200 text-stone-500 text-[10px]">?</div>
+              </div>
+              <span class="text-xs text-stone-500 font-medium uppercase tracking-wider">
+                Hosted by <span class="text-stone-900 font-bold">{display_name(@owner)}</span>
               </span>
-              <span class="text-stone-500">Vibe</span>
-            </span>
+            </div>
           </div>
 
-          <h1 class="text-4xl sm:text-5xl md:text-6xl font-serif leading-[0.95] tracking-tight mb-10">
-            {@event.title}
+          <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-[0.95] mb-6 text-center md:text-left">
+            {@event.title}<br />
+            <span class="italic text-stone-500 text-3xl sm:text-4xl lg:text-5xl">{@formatted_time.weekday}</span>
           </h1>
 
-          <div class="grid grid-cols-[auto_1fr] gap-x-10 gap-y-6 text-stone-900 border-l border-stone-900/80 pl-6 mb-12 py-2">
-            <div class="text-stone-400 text-xs font-bold uppercase tracking-[0.25em] pt-1.5">When</div>
-            <div>
-              <div class="font-serif text-2xl leading-none mb-1">{@formatted_time.weekday}</div>
-              <div class="text-stone-600 text-lg font-light">
-                {@formatted_time.date}
-                <span class="text-stone-300 mx-2">|</span>
-                {@formatted_time.time}
+          <div class="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 sm:gap-8 border-t border-stone-200/60 pt-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600 border border-stone-200">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0h18M5.25 12h13.5" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-stone-400 uppercase tracking-widest">Date</div>
+                <div class="text-lg font-serif font-bold text-stone-900 leading-none">{@formatted_time.date}</div>
               </div>
             </div>
 
-            <div class="text-stone-400 text-xs font-bold uppercase tracking-[0.25em] pt-1.5">Where</div>
-            <div class="text-lg font-medium border-b border-stone-200 pb-1 inline-block self-start">
-              {@event.location}
-            </div>
-          </div>
+            <div class="hidden sm:block w-px h-8 bg-stone-200"></div>
 
-          <div class="prose prose-stone prose-lg max-w-3xl">
-            <p class="text-stone-600 font-light leading-relaxed text-xl">
-              {@event.description}
-            </p>
-          </div>
-        </section>
-
-        <section class="pt-12 border-t border-stone-100 mt-12">
-          <div class="flex items-baseline justify-between mb-8">
-            <h3 class="font-serif text-3xl text-stone-900">The Guest List</h3>
-            <span class="text-stone-400 text-sm">
-              {length(Map.get(@attendees_by_status, "GOING", []))} confirmed
-            </span>
-          </div>
-
-          <div class="space-y-10">
-            <div>
-              <%= if Map.get(@attendees_by_status, "GOING", []) != [] do %>
-                <div class="flex flex-wrap gap-4">
-                  <div
-                    :for={user <- Map.get(@attendees_by_status, "GOING", [])}
-                    class="group flex items-center gap-3 pr-5 pl-1 py-1 rounded-full bg-white border border-stone-100 hover:border-stone-200 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
-                  >
-                    <.avatar user={user} size="sm" class="shrink-0" />
-                    <span class="font-medium text-stone-900">{display_name(user)}</span>
-                  </div>
-                </div>
-              <% else %>
-                <div class="py-4 text-stone-400 italic font-light">
-                  It's quiet... be the first to join.
-                </div>
-              <% end %>
-            </div>
-
-            <%= if Map.get(@attendees_by_status, "MAYBE", []) != [] or
-                    Map.get(@attendees_by_status, "NOT_GOING", []) != [] do %>
-              <div class="pt-4">
-                <div class="text-xs font-bold text-stone-300 uppercase tracking-[0.25em] mb-4">Others</div>
-                <div class="flex flex-wrap gap-x-6 gap-y-3">
-                  <div
-                    :for={user <- Map.get(@attendees_by_status, "MAYBE", [])}
-                    class="flex items-center gap-2 opacity-70"
-                  >
-                    <.avatar user={user} size="xs" class="shrink-0" />
-                    <span class="text-stone-600 text-sm">
-                      {display_name(user)}
-                      <span class="text-amber-700 text-xs ml-1">(Maybe)</span>
-                    </span>
-                  </div>
-                </div>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600 border border-stone-200">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
               </div>
-            <% end %>
+              <div>
+                <div class="text-xs font-bold text-stone-400 uppercase tracking-widest">Time</div>
+                <div class="text-lg font-serif font-bold text-stone-900 leading-none">{@formatted_time.time}</div>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       </div>
-    </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mt-8 md:mt-10">
+        <div class="md:col-span-8 space-y-8">
+          <section>
+            <h2 class="font-hand text-3xl text-stone-800 mb-4 transform -rotate-1 inline-block">The Plan</h2>
+            <div class="prose prose-stone prose-lg leading-relaxed font-serif text-stone-600 max-w-none">
+              <p>{@event.description}</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="md:col-span-4">
+          <div class="sticky top-24">
+            <div class="bg-[#FFFDF5] p-6 shadow-[2px_4px_12px_rgba(0,0,0,0.08)] transform rotate-1 border border-stone-200/60 relative">
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-stone-300/20 backdrop-blur-sm shadow-inner border border-stone-300/40 z-10 flex items-center justify-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-stone-400"></div>
+              </div>
+
+              <div class="flex items-baseline justify-between mb-4 border-b border-stone-100 pb-2">
+                <h3 class="font-sans text-xs font-bold uppercase tracking-widest text-stone-400">Who's In</h3>
+                <span class="font-serif italic text-stone-900 text-lg">{length(Map.get(@attendees_by_status, "GOING", []))} people</span>
+              </div>
+
+              <div class="flex flex-wrap gap-2 mb-4">
+                <div
+                  :for={user <- Map.get(@attendees_by_status, "GOING", [])}
+                  class="w-10 h-10 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform cursor-pointer overflow-hidden"
+                  title={display_name(user)}
+                >
+                  <.avatar user={user} size="sm" class="w-full h-full rounded-full" />
+                </div>
+                <div :if={Map.get(@attendees_by_status, "GOING", []) == []} class="text-sm text-stone-500">
+                  Be the first to join.
+                </div>
+              </div>
+
+              <div :if={Map.get(@attendees_by_status, "MAYBE", []) != []} class="mt-3 text-center text-xs text-stone-500">
+                Maybe: {Enum.map_join(Map.get(@attendees_by_status, "MAYBE", []), ", ", &display_name/1)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-12 mt-4 mb-8">
+          <div class="relative group">
+            <div class="absolute -top-6 left-4 z-10 transform -rotate-2">
+              <span class="font-hand text-2xl text-stone-800 font-bold bg-yellow-100/90 px-2 py-0.5 shadow-sm">Meet us here!</span>
+              <svg class="w-6 h-6 text-stone-800 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+              </svg>
+            </div>
+
+            <div class="w-full h-80 bg-stone-100 rounded-xl border-4 border-white shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden relative">
+              <div class="absolute inset-0 bg-map-pattern bg-cover bg-center opacity-30 grayscale contrast-125 group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-700 ease-in-out"></div>
+
+              <div class="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-64 bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-stone-200/60">
+                <div class="flex items-start gap-3">
+                  <div class="bg-orange-50 p-2 rounded-full shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-orange-600">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-stone-900">{@event.location}</div>
+                    <div class="text-stone-500 text-sm mb-2">Tap for details</div>
+                    <a
+                      href={"https://www.google.com/maps/search/?api=1&query=#{URI.encode(@event.location)}"}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="text-xs font-bold uppercase tracking-wider text-orange-600 hover:text-orange-700 hover:underline"
+                    >
+                      Get Directions &rarr;
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div class="relative">
+                  <span class="flex h-6 w-6 relative z-10">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-6 w-6 bg-orange-500 border-2 border-white shadow-md"></span>
+                  </span>
+                  <div class="w-1 h-8 bg-stone-800/20 absolute left-1/2 -translate-x-1/2 top-5 blur-[1px]"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="absolute -top-3 -right-3 w-16 h-6 bg-stone-200/50 rotate-45 backdrop-blur-sm border border-white/40"></div>
+            <div class="absolute -bottom-3 -left-3 w-16 h-6 bg-stone-200/50 rotate-45 backdrop-blur-sm border border-white/40"></div>
+          </div>
+        </div>
+      </div>
+    </main>
 
     <div class="fixed bottom-6 left-0 right-0 flex justify-center px-4 z-40 pointer-events-none">
-      <div class="pointer-events-auto bg-stone-900 text-stone-200 p-2 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] flex items-center gap-1 max-w-xl w-full mx-auto ring-1 ring-white/10 backdrop-blur-xl">
-        <button
-          type="button"
-          phx-click="respond"
-          phx-value-response="GOING"
-          phx-value-event-id={@event.id}
-          class={[
-            "flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all duration-300",
-            @current_user_status == "GOING" && "bg-white text-stone-900 shadow-sm",
-            @current_user_status != "GOING" && "text-stone-300 hover:text-white hover:bg-white/10"
-          ]}
-        >
-          <.icon name="hero-check" class="size-4" />
-          <span>I'm In</span>
-        </button>
+      <div class="pointer-events-auto bg-neutral text-neutral-content p-2 rounded-full shadow-2xl flex items-center gap-2 max-w-2xl w-full mx-auto ring-1 ring-base-300/40 backdrop-blur-xl">
+        <div class="grid grid-cols-3 gap-2 w-full">
+          <button
+            type="button"
+            phx-click="respond"
+            phx-value-response="GOING"
+            phx-value-event-id={@event.id}
+            class={[
+              "btn btn-sm sm:btn-md btn-block rounded-full gap-2 transition-all",
+              @current_user_status == "GOING" && "btn-primary text-base-content",
+              @current_user_status != "GOING" && "btn-ghost text-neutral-content/80 hover:btn-primary"
+            ]}
+          >
+            <.icon name="hero-check" class="size-4" />
+            <span>I'm In</span>
+          </button>
 
-        <button
-          type="button"
-          phx-click="respond"
-          phx-value-response="MAYBE"
-          phx-value-event-id={@event.id}
-          class={[
-            "flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all duration-300",
-            @current_user_status == "MAYBE" && "bg-stone-700 text-white",
-            @current_user_status != "MAYBE" && "text-stone-300 hover:text-white hover:bg-white/10"
-          ]}
-        >
-          <.icon name="hero-question-mark-circle" class="size-4" />
-          <span>Maybe</span>
-        </button>
+          <button
+            type="button"
+            phx-click="respond"
+            phx-value-response="MAYBE"
+            phx-value-event-id={@event.id}
+            class={[
+              "btn btn-sm sm:btn-md btn-block rounded-full gap-2 transition-all",
+              @current_user_status == "MAYBE" && "btn-secondary text-base-content",
+              @current_user_status != "MAYBE" && "btn-ghost text-neutral-content/80 hover:btn-secondary"
+            ]}
+          >
+            <.icon name="hero-question-mark-circle" class="size-4" />
+            <span>Maybe</span>
+          </button>
 
-        <button
-          type="button"
-          phx-click="respond"
-          phx-value-response="NOT_GOING"
-          phx-value-event-id={@event.id}
-          class={[
-            "flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all duration-300",
-            @current_user_status == "NOT_GOING" && "bg-stone-700 text-white",
-            @current_user_status != "NOT_GOING" && "text-stone-300 hover:text-white hover:bg-white/10"
-          ]}
-        >
-          <.icon name="hero-x-mark" class="size-4" />
-          <span>No</span>
-        </button>
+          <button
+            type="button"
+            phx-click="respond"
+            phx-value-response="NOT_GOING"
+            phx-value-event-id={@event.id}
+            class={[
+              "btn btn-sm sm:btn-md btn-block rounded-full gap-2 transition-all",
+              @current_user_status == "NOT_GOING" && "btn-accent text-base-content",
+              @current_user_status != "NOT_GOING" && "btn-ghost text-neutral-content/80 hover:btn-accent"
+            ]}
+          >
+            <.icon name="hero-x-mark" class="size-4" />
+            <span>No</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

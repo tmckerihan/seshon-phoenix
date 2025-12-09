@@ -117,6 +117,36 @@ defmodule Seshon.Events do
     |> limit(^limit)
     |> offset(^offset)
     |> Repo.all()
+    |> attach_going_attendees()
+  end
+
+  defp attach_going_attendees([]), do: []
+
+  defp attach_going_attendees(events) do
+    event_ids = Enum.map(events, & &1.event.id)
+    attendees_by_event = going_attendees_by_event(event_ids)
+
+    Enum.map(events, fn event ->
+      Map.put(event, :going_attendees, Map.get(attendees_by_event, event.event.id, []))
+    end)
+  end
+
+  defp going_attendees_by_event([]), do: %{}
+
+  defp going_attendees_by_event(event_ids) do
+    from(ue in UserEvent,
+      where: ue.event_id in ^event_ids and ue.status == "GOING",
+      join: u in User,
+      on: u.id == ue.user_id,
+      order_by: [desc: ue.is_owner, asc: u.inserted_at],
+      select: {ue.event_id, u}
+    )
+    |> Repo.all()
+    |> Enum.reduce(%{}, fn {event_id, user}, acc ->
+      Map.update(acc, event_id, [user], fn list ->
+        if length(list) < 5, do: list ++ [user], else: list
+      end)
+    end)
   end
 
   @doc """
